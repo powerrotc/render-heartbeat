@@ -1,0 +1,37 @@
+name: Render Free Tier Heartbeat
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-free-tier-heartbeat
+  cancel-in-progress: false
+
+jobs:
+  heartbeat:
+    name: Ping Render health endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Keep Render service awake
+        env:
+          HEALTH_URL: https://my-personal-ai-agent-x1qp.onrender.com/health
+        run: |
+          echo "Pinging Render health endpoint..."
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --connect-timeout 15 \
+            --max-time 90 \
+            --retry 2 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            "$HEALTH_URL"
+          echo
+          echo "Render health endpoint responded successfully."
